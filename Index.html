@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java Practice Online Judge IDE</title>
+
+  <!-- CodeMirror 5 untuk Editor Java Tema VS Code Dark+ -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/vscode-dark.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #1e1e1e;
+      color: #d4d4d4;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background-color: #181818;
+      border-bottom: 1px solid #333;
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .badge {
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #statusText {
+      font-size: 13px;
+      color: #9cdcfe;
+    }
+
+    /* Main Split Layout */
+    .main-container {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 48px);
+      overflow: hidden;
+    }
+
+    /* Sidebar Kasus */
+    .sidebar {
+      width: 38%;
+      min-width: 280px;
+      max-width: 65%;
+      background-color: #f8fafc;
+      color: #0f172a;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .sidebar-header {
+      background-color: #e2e8f0;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 13px;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .problem-content {
+      padding: 18px;
+      overflow-y: auto;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .problem-content h2 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #0f172a;
+      border-bottom: 2px solid #cbd5e1;
+      padding-bottom: 8px;
+    }
+
+    .problem-content h3 {
+      font-size: 14px;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      color: #1e293b;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .problem-content p {
+      margin-bottom: 10px;
+    }
+
+    .problem-content ul {
+      margin-left: 20px;
+      margin-bottom: 12px;
+    }
+
+    .problem-content li {
+      margin-bottom: 6px;
+    }
+
+    .problem-content pre {
+      background-color: #e2e8f0;
+      color: #0f172a;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-family: "Consolas", monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    /* Resizer */
+    .resizer {
+      width: 6px;
+      background-color: #333;
+      cursor: col-resize;
+      transition: background-color 0.2s;
+    }
+
+    .resizer:hover {
+      background-color: #007acc;
+    }
+
+    /* Workspace Kanan */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background-color: #1e1e1e;
+      overflow: hidden;
+    }
+
+    /* Toolbar Tombol */
+    .toolbar {
+      background-color: #252526;
+      padding: 8px 14px;
+      border-bottom: 1px solid #333;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      padding: 7px 14px;
+      border-radius: 5px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity 0.15s;
+    }
+
+    button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-run {
+      background-color: #bfdbfe;
+      color: #000000;
+    }
+
+    .btn-verify {
+      background-color: #bbf7d0;
+      color: #000000;
+    }
+
+    .btn-reset {
+      background-color: #e2e8f0;
+      color: #000000;
+    }
+
+    .btn-import {
+      background-color: #fde68a;
+      color: #000000;
+      margin-left: auto;
+    }
+
+    /* Editor Wrapper */
+    .editor-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .CodeMirror {
+      height: 100% !important;
+      font-family: "Consolas", "Fira Code", monospace;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* Bottom IO Panel */
+    .bottom-panel {
+      height: 230px;
+      display: flex;
+      border-top: 2px solid #333;
+      background-color: #f8fafc;
+    }
+
+    .io-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #cbd5e1;
+    }
+
+    .io-box:last-child {
+      border-right: none;
+    }
+
+    .io-header {
+      background-color: #e2e8f0;
+      color: #000000;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      border-bottom: 1px solid #cbd5e1;
+    }
+
+    textarea.io-area {
+      flex: 1;
+      width: 100%;
+      border: none;
+      resize: none;
+      padding: 10px;
+      font-family: "Consolas", monospace;
+      font-size: 13px;
+      color: #000000;
+      background-color: #ffffff;
+      outline: none;
+    }
+
+    .console-output {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-y: auto;
+      font-family: "Consolas", monospace;
+      font-size: 13px;
+      color: #000000;
+      background-color: #f1f5f9;
+      white-space: pre-wrap;
+    }
+
+    .status-accepted {
+      color: #15803d;
+      font-weight: 700;
+    }
+
+    .status-failed {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    /* Modal Import JSON */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-box {
+      background: #ffffff;
+      color: #000000;
+      width: 90%;
+      max-width: 680px;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    .modal-box h3 {
+      font-size: 16px;
+      color: #0f172a;
+    }
+
+    .modal-box p {
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .modal-box textarea {
+      width: 100%;
+      height: 240px;
+      font-family: "Consolas", monospace;
+      font-size: 12px;
+      padding: 10px;
+      border: 1px solid #94a3b8;
+      border-radius: 6px;
+      color: #000000;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <span>Java Practice IDE &amp; Online Judge</span>
+      <span class="badge">Java 15+</span>
+    </div>
+    <div class="header-actions">
+      <span id="statusText">Status: Siap</span>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-container" id="mainContainer">
+    <!-- Sidebar Kasus -->
+    <aside class="sidebar" id="sidebarPanel">
+      <div class="sidebar-header">
+        <span>DESKRIPSI KASUS</span>
+        <span id="problemTag" style="font-weight: 500; font-size: 12px; color: #475569;">Kasus Aktif</span>
+      </div>
+      <div class="problem-content" id="problemContent"></div>
+    </aside>
+
+    <!-- Garis Geser Sidebar -->
+    <div class="resizer" id="resizer"></div>
+
+    <!-- Compiler & Verifier -->
+    <main class="workspace">
+      <div class="toolbar">
+        <button class="btn-run" id="btnRun" onclick="runCustomInput()">&#9654; Jalankan (Custom Input)</button>
+        <button class="btn-verify" id="btnVerify" onclick="verifyAllTestCases()">&#10004; Verifikasi Jawaban (10 Test Case)</button>
+        <button class="btn-reset" id="btnReset" onclick="resetCode()">&#8634; Reset Kode</button>
+        <button class="btn-import" onclick="openImportModal()">&#128229; Import Soal Baru (JSON)</button>
+      </div>
+
+      <div class="editor-wrapper">
+        <textarea id="codeEditor"></textarea>
+      </div>
+
+      <div class="bottom-panel">
+        <div class="io-box" style="max-width: 35%;">
+          <div class="io-header">Custom Input (stdin)</div>
+          <textarea class="io-area" id="customInput" placeholder="Masukkan input uji coba..."></textarea>
+        </div>
+        <div class="io-box">
+          <div class="io-header">Output &amp; Hasil Verifikasi</div>
+          <div class="console-output" id="consoleOutput">Hasil eksekusi atau verifikasi test case akan tampil di sini...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Import JSON -->
+  <div class="modal-overlay" id="importModal">
+    <div class="modal-box">
+      <h3>Import Soal &amp; Test Case Baru (Format JSON)</h3>
+      <p>Tempel (paste) kode JSON soal baru yang diberikan dari chat AI di bawah ini, lalu klik <b>Terapkan Soal</b>:</p>
+      <textarea id="jsonInputArea" placeholder='{"title": "...", "descriptionHtml": "...", "defaultInput": "...", "testCases": [...]}'></textarea>
+      <div class="modal-actions">
+        <button class="btn-reset" onclick="closeImportModal()">Batal</button>
+        <button class="btn-verify" onclick="applyImportedProblem()">Terapkan Soal</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. TEMPLATE KODE DEFAULT (BERSIH SESUAI PERMINTAAN)
+    // =========================================================================
+    const DEFAULT_JAVA_TEMPLATE = `import java.util.Scanner;
+
+
+public class Main {
+    public static void main(String[] args) {
+        // Ketik kode kalian di sini...
+
+    }
+}`;
+
+    // =========================================================================
+    // 2. DATA SOAL BAWAAN (SEWA MOBIL & PAKET JARAK TEMPUH)
+    // =========================================================================
+    const DEFAULT_PROBLEM = {
+      title: "Sistem Sewa Mobil Lepas Kunci & Paket Jarak Tempuh",
+      defaultInput: "1 7 1",
+      descriptionHtml: `
+        <h2>Sistem Sewa Mobil Lepas Kunci &amp; Paket Jarak Tempuh</h2>
+        <p>Sebuah perusahaan penyewaan kendaraan bernama <b>'Nusantara Rent-Car'</b> melayani penyewaan mobil lepas kunci bagi wisatawan maupun pelanggan bisnis. Pemilik usaha ingin membuat sistem kasir otomatis yang dapat menghitung total biaya sewa pelanggan secara akurat berdasarkan tipe mobil yang dipilih, lama hari penyewaan, serta paket batas jarak tempuh yang diambil.</p>
+
+        <h3>1. Tipe Mobil dan Tarif Sewa per Hari</h3>
+        <ul>
+          <li><b>City Car (kode 1):</b> Rp300.000 per hari</li>
+          <li><b>MPV / Keluarga (kode 2):</b> Rp450.000 per hari</li>
+          <li><b>SUV / Mewah (kode 3):</b> Rp800.000 per hari</li>
+        </ul>
+
+        <h3>2. Ketentuan Khusus &amp; Biaya Tambahan</h3>
+        <ul>
+          <li><b>Pembatalan Sewa:</b> Jika lama sewa tercatat <b>0 hari</b>, transaksi dianggap batal dan total biaya langsung <b>Rp0</b> (tanpa biaya paket maupun biaya kebersihan).</li>
+          <li><b>Paket Jarak Tempuh (Mileage Package):</b>
+            <br>- <b>Kode 0 (Batas Standar):</b> Tidak ada biaya tambahan (<b>Rp0</b>).
+            <br>- <b>Kode 1 (Unlimited Mileage):</b> Tambahan biaya sebesar <b>Rp50.000 per hari</b> sewa. <i>(Pengecualian: Khusus untuk mobil <b>SUV / kode 3</b>, fasilitas Unlimited Mileage sudah termasuk gratis / <b>Rp0</b>)</i>.
+          </li>
+          <li><b>Diskon Sewa Jangka Panjang:</b> Jika lama sewa <b>7 hari atau lebih</b> (&ge; 7 hari), pelanggan mendapat potongan diskon sebesar <b>15%</b> yang dihitung <b>HANYA dari Biaya Sewa Mobil Dasar</b> (tidak memotong biaya paket jarak maupun biaya kebersihan).</li>
+          <li><b>Biaya Kebersihan (Cleaning Fee):</b> Setiap unit mobil yang keluar garasi (lama sewa &gt; 0 hari) dikenakan biaya kebersihan tetap (flat) sebesar <b>Rp50.000</b> di akhir perhitungan.</li>
+        </ul>
+
+        <h3>3. Rumus Perhitungan (Jika Lama Sewa &gt; 0 hari)</h3>
+        <pre>1. Biaya Sewa Dasar  = Lama Hari * Tarif per Hari
+2. Diskon            = 15% * Biaya Sewa Dasar (jika Lama Hari &gt;= 7, else 0)
+3. Biaya Paket Jarak = Lama Hari * 50.000 (jika Paket == 1 &amp; Mobil != 3)
+4. Total Biaya       = (Biaya Sewa Dasar - Diskon) + Biaya Paket Jarak + 50.000</pre>
+
+        <h3>Format Input &amp; Output</h3>
+        <p><b>Input:</b> Satu baris berisi <code>&lt;kode_mobil&gt; &lt;lama_hari&gt; &lt;kode_paket&gt;</code></p>
+        <p><b>Output:</b> Bilangan bulat <code>&lt;total_biaya&gt;</code> tanpa simbol mata uang dan tanpa pemisah ribuan.</p>
+
+        <h3>Contoh Uji</h3>
+        <pre>Contoh 1:
+Input  : 1 7 1
+Output : 2185000
+
+Contoh 2:
+Input  : 3 5 1
+Output : 4050000
+
+Contoh 3:
+Input  : 2 0 1
+Output : 0</pre>
+      `,
+      testCases: [
+        { name: "Test Case 1 (Contoh 1: City Car, 7 hari, Unlimited)", input: "1 7 1", expected: "2185000" },
+        { name: "Test Case 2 (Contoh 2: SUV, 5 hari, Unlimited Gratis)", input: "3 5 1", expected: "4050000" },
+        { name: "Test Case 3 (Contoh 3: Batal Sewa 0 hari)", input: "2 0 1", expected: "0" },
+        { name: "Test Case 4 (Edge: 0 hari City Car Standar)", input: "1 0 0", expected: "0" },
+        { name: "Test Case 5 (Edge: 6 hari tepat - Tanpa Diskon)", input: "1 6 1", expected: "2150000" },
+        { name: "Test Case 6 (Edge: 7 hari tepat - MPV Standar)", input: "2 7 0", expected: "2727500" },
+        { name: "Test Case 7 (Edge: 7 hari SUV Unlimited Gratis)", input: "3 7 1", expected: "4810000" },
+        { name: "Test Case 8 (Normal: 1 hari City Car Standar)", input: "1 1 0", expected: "350000" },
+        { name: "Test Case 9 (Normal: 10 hari MPV Unlimited)", input: "2 10 1", expected: "4375000" },
+        { name: "Test Case 10 (Normal: 3 hari SUV Standar)", input: "3 3 0", expected: "2450000" }
+      ]
+    };
+
+    let currentProblem = JSON.parse(localStorage.getItem("savedJavaProblem")) || DEFAULT_PROBLEM;
+
+    // =========================================================================
+    // 3. INISIALISASI EDITOR CODEMIRROR (VS CODE THEME)
+    // =========================================================================
+    const editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+      mode: "text/x-java",
+      theme: "vscode-dark",
+      lineNumbers: true,
+      indentUnit: 4,
+      tabSize: 4,
+      indentWithTabs: false,
+      autoCloseBrackets: true,
+      matchBrackets: true
+    });
+
+    function loadProblemToUI(problem) {
+      document.getElementById("problemContent").innerHTML = problem.descriptionHtml;
+      document.getElementById("customInput").value = problem.defaultInput || "";
+      const savedCode = localStorage.getItem("savedJavaCode_" + problem.title);
+      editor.setValue(savedCode || DEFAULT_JAVA_TEMPLATE);
+    }
+
+    editor.on("change", () => {
+      localStorage.setItem("savedJavaCode_" + currentProblem.title, editor.getValue());
+    });
+
+    loadProblemToUI(currentProblem);
+
+    // =========================================================================
+    // 4. EKSEKUSI KODE JAVA VIA PISTON PUBLIC API
+    // =========================================================================
+    const PISTON_API_URL = "https://emkc.org/api/v2/piston/execute";
+
+    async function executeJavaOnline(sourceCode, stdinData) {
+      const response = await fetch(PISTON_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          language: "java",
+          version: "15.0.2",
+          files: [{ name: "Main.java", content: sourceCode }],
+          stdin: stdinData
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP Error ${response.status}: Gagal menghubungi server compiler.`);
+      }
+      return await response.json();
+    }
+
+    function setControlsDisabled(disabled) {
+      document.getElementById("btnRun").disabled = disabled;
+      document.getElementById("btnVerify").disabled = disabled;
+      document.getElementById("btnReset").disabled = disabled;
+    }
+
+    async function runCustomInput() {
+      const code = editor.getValue();
+      const input = document.getElementById("customInput").value;
+      const consoleEl = document.getElementById("consoleOutput");
+      const statusEl = document.getElementById("statusText");
+
+      setControlsDisabled(true);
+      statusEl.textContent = "Status: Mengompilasi & menjalankan...";
+      consoleEl.textContent = "Sedang mengompilasi kode Java di cloud...";
+
+      try {
+        const result = await executeJavaOnline(code, input);
+
+        if (result.compile && result.compile.code !== 0) {
+          consoleEl.innerHTML = `<span class="status-failed">COMPILATION ERROR:</span>\n----------------------------------------\n${escapeHtml(result.compile.output)}`;
+        } else if (result.run && result.run.code !== 0) {
+          consoleEl.innerHTML = `<span class="status-failed">RUNTIME ERROR:</span>\n----------------------------------------\n${escapeHtml(result.run.stderr || result.run.output)}`;
+        } else {
+          consoleEl.textContent = `=== OUTPUT PROGRAM ===\n${result.run.stdout}`;
+        }
+      } catch (err) {
+        consoleEl.innerHTML = `<span class="status-failed">SYSTEM ERROR:</span> ${escapeHtml(err.message)}`;
+      } finally {
+        setControlsDisabled(false);
+        statusEl.textContent = "Status: Selesai";
+      }
+    }
+
+    async function verifyAllTestCases() {
+      const code = editor.getValue();
+      const consoleEl = document.getElementById("consoleOutput");
+      const statusEl = document.getElementById("statusText");
+      const cases = currentProblem.testCases;
+
+      setControlsDisabled(true);
+      statusEl.textContent = "Status: Menguji 10 Test Case...";
+      consoleEl.textContent = "Menjalankan pengujian otomatis terhadap seluruh test case...\n";
+
+      let passedCount = 0;
+      let reportLines = [];
+
+      try {
+        for (let i = 0; i < cases.length; i++) {
+          const tc = cases[i];
+          statusEl.textContent = `Status: Menguji ${i + 1}/${cases.length}...`;
+
+          const result = await executeJavaOnline(code, tc.input);
+
+          // Jika gagal kompilasi pada test case pertama, langsung hentikan
+          if (result.compile && result.compile.code !== 0) {
+            consoleEl.innerHTML = `<span class="status-failed">COMPILATION ERROR (0/${cases.length} Passed):</span>\n----------------------------------------\n${escapeHtml(result.compile.output)}`;
+            setControlsDisabled(false);
+            statusEl.textContent = "Status: Compilation Error";
+            return;
+          }
+
+          if (result.run && result.run.code !== 0) {
+            reportLines.push(`[ERROR]  ${tc.name} -> Runtime Error`);
+          } else {
+            const actual = (result.run.stdout || "").trim();
+            if (actual === tc.expected.trim()) {
+              passedCount++;
+              reportLines.push(`[PASSED] ${tc.name}`);
+            } else {
+              reportLines.push(`[FAILED] ${tc.name} (Output kamu: '${actual}')`);
+            }
+          }
+
+          // Jeda singkat 220ms agar tidak terkena rate-limit API publik
+          if (i < cases.length - 1) {
+            await new Promise(r => setTimeout(r, 220));
+          }
+        }
+
+        const isAccepted = passedCount === cases.length;
+        const headerHtml = isAccepted
+          ? `<span class="status-accepted">STATUS AKHIR: ACCEPTED (${passedCount}/${cases.length} Passed) - SELAMAT!</span>`
+          : `<span class="status-failed">STATUS AKHIR: WRONG ANSWER (${passedCount}/${cases.length} Passed)</span>`;
+
+        consoleEl.innerHTML = `${headerHtml}\n========================================================\n${escapeHtml(reportLines.join("\n"))}`;
+      } catch (err) {
+        consoleEl.innerHTML = `<span class="status-failed">SYSTEM ERROR:</span> ${escapeHtml(err.message)}`;
+      } finally {
+        setControlsDisabled(false);
+        statusEl.textContent = "Status: Selesai";
+      }
+    }
+
+    function resetCode() {
+      if (confirm("Kembalikan kode di editor ke template awal?")) {
+        editor.setValue(DEFAULT_JAVA_TEMPLATE);
+        document.getElementById("consoleOutput").textContent = "Kode telah di-reset.";
+      }
+    }
+
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    // =========================================================================
+    // 5. FITUR IMPORT SOAL BARU DARI JSON (UNTUK UPDATE SOAL DARI CHAT)
+    // =========================================================================
+    function openImportModal() {
+      document.getElementById("jsonInputArea").value = "";
+      document.getElementById("importModal").style.display = "flex";
+    }
+
+    function closeImportModal() {
+      document.getElementById("importModal").style.display = "none";
+    }
+
+    function applyImportedProblem() {
+      const rawJson = document.getElementById("jsonInputArea").value.trim();
+      try {
+        const parsed = JSON.parse(rawJson);
+        if (!parsed.descriptionHtml || !Array.isArray(parsed.testCases) || parsed.testCases.length === 0) {
+          alert("Format JSON tidak valid: pastikan memiliki 'descriptionHtml' dan array 'testCases'.");
+          return;
+        }
+        currentProblem = parsed;
+        localStorage.setItem("savedJavaProblem", JSON.stringify(currentProblem));
+        loadProblemToUI(currentProblem);
+        document.getElementById("consoleOutput").textContent = "Soal baru berhasil dimuat! Silakan tulis solusimu.";
+        closeImportModal();
+      } catch (e) {
+        alert("Gagal membaca JSON: " + e.message);
+      }
+    }
+
+    // =========================================================================
+    // 6. RESIZER SIDEBAR DRAG
+    // =========================================================================
+    const resizer = document.getElementById("resizer");
+    const sidebar = document.getElementById("sidebarPanel");
+    let isResizing = false;
+
+    resizer.addEventListener("mousedown", () => {
+      isResizing = true;
+      document.body.style.cursor = "col-resize";
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isResizing) return;
+      const newWidth = (e.clientX / window.innerWidth) * 100;
+      if (newWidth > 20 && newWidth < 70) {
+        sidebar.style.width = newWidth + "%";
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      isResizing = false;
+      document.body.style.cursor = "default";
+    });
+  </script>
+</body>
+</html>
